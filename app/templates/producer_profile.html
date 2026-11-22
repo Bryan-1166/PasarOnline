@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Toko - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #198754;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .secondary {
+            background: #555;
+            margin-left: 5px;
+        }
+
+        .logout {
+            background: #dc3545;
+            margin-left: 5px;
+        }
+
+        .logout:hover {
+            background: #bb2d3b;
+        }
+
+        #message {
+            margin-top: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            button {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Profil Toko</h1>
+
+    <p>Halo, {{ user.full_name }}. Kelola informasi toko Anda.</p>
+
+    <form id="profileForm">
+
+        <label>Nama Toko</label>
+        <input
+            id="shop_name"
+            value="{{ producer.shop_name }}"
+            minlength="3"
+            maxlength="150"
+            required
+        >
+
+        <label>Nomor Telepon</label>
+        <input
+            id="phone"
+            value="{{ producer.phone }}"
+            minlength="8"
+            maxlength="20"
+            required
+        >
+
+        <label>Deskripsi Toko</label>
+        <textarea id="description">{{ producer.description or '' }}</textarea>
+
+        <label>Nama Pasar</label>
+        <input
+            id="market_name"
+            value="{{ producer.market_name }}"
+            minlength="3"
+            maxlength="150"
+            required
+        >
+
+        <label>Blok</label>
+        <input
+            id="block"
+            value="{{ producer.block or '' }}"
+            maxlength="50"
+        >
+
+        <label>Nomor Kios</label>
+        <input
+            id="stall_number"
+            value="{{ producer.stall_number }}"
+            maxlength="50"
+            required
+        >
+
+        <label>Lantai</label>
+        <input
+            id="floor"
+            value="{{ producer.floor or '' }}"
+            maxlength="50"
+        >
+
+        <button type="submit">Simpan Perubahan</button>
+
+        <button
+            type="button"
+            class="secondary"
+            onclick="location.href='/producer/products/page'"
+        >
+            Kembali ke Produk
+        </button>
+
+        <button
+            type="button"
+            class="logout"
+            onclick="logout()"
+        >
+            Logout
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+</div>
+
+<script>
+    document.getElementById("profileForm")
+        .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const fields = [
+            "shop_name",
+            "phone",
+            "description",
+            "market_name",
+            "block",
+            "stall_number",
+            "floor"
+        ];
+
+        const data = {};
+
+        fields.forEach(field => {
+            const value = document.getElementById(field).value.trim();
+            data[field] = value || null;
+        });
+
+        const message = document.getElementById("message");
+
+        try {
+            const response = await fetch("/producer/profile", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                message.style.color = "green";
+                message.textContent = "Profil toko berhasil diperbarui!";
+            } else {
+                message.style.color = "red";
+                message.textContent = result.detail || "Gagal memperbarui profil.";
+            }
+
+        } catch (error) {
+            message.style.color = "red";
+            message.textContent = "Terjadi kesalahan koneksi ke server.";
+        }
+    });
+
+    async function logout() {
+        const konfirmasi = confirm("Apakah Anda yakin ingin logout?");
+
+        if (!konfirmasi) {
+            return;
+        }
+
+        try {
+            const response = await fetch("/auth/logout", {
+                method: "POST"
+            });
+
+            if (response.ok) {
+                window.location.href = "/auth/login";
+            } else {
+                alert("Gagal logout. Silakan coba lagi.");
+            }
+
+        } catch (error) {
+            alert("Terjadi kesalahan koneksi ke server.");
+        }
+    }
+</script>
+
+</body>
+</html>

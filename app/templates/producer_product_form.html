@@ -1,0 +1,707 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} - PasarOnline</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 18px 5%;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(750px, 92%);
+            margin: 30px auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 7px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .unit-card {
+            border: 1px solid #dce3e8;
+            padding: 15px;
+            border-radius: 9px;
+            margin-top: 12px;
+        }
+
+        .unit-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 7px;
+            padding: 11px 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: #176b45;
+            color: white;
+        }
+
+        .secondary {
+            background: #e5e7eb;
+            color: #243040;
+        }
+
+        .danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            margin-top: 10px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .preview {
+            max-width: 180px;
+            max-height: 150px;
+            display: block;
+            margin-top: 12px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .muted {
+            color: #687585;
+            font-size: 13px;
+        }
+
+        .message {
+            display: none;
+            padding: 12px;
+            border-radius: 7px;
+            margin-top: 15px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media(max-width: 600px) {
+            .unit-grid { grid-template-columns: 1fr; }
+            .panel { padding: 18px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a href="/producer/products/page">
+        ← Kembali ke Manajemen Produk
+    </a>
+</header>
+
+<main>
+    <section class="panel">
+
+        <h1>{{ page_title }}</h1>
+
+        <p class="muted">
+            Lengkapi informasi produk dan pilihan satuannya.
+        </p>
+
+        <div id="errorMessage" class="message"></div>
+
+        <div
+            id="productData"
+            data-product-id="{{ product.id if product else '' }}"
+            data-existing-units='{{ product.units | tojson if product else "[]" }}'
+            hidden
+        ></div>
+
+        <form id="productForm">
+
+            <label for="name">Nama Produk</label>
+            <input
+                type="text"
+                id="name"
+                maxlength="150"
+                required
+                value="{{ product.name if product else '' }}"
+            >
+
+            <label for="category_id">Kategori</label>
+            <select id="category_id" required>
+                <option value="">-- Pilih Kategori --</option>
+
+                {% for category in categories %}
+                <option
+                    value="{{ category.id }}"
+                    {% if product and product.category_id == category.id %}
+                        selected
+                    {% endif %}
+                >
+                    {{ category.name }}
+                    {% if not category.is_active %}
+                        (Nonaktif - kategori lama)
+                    {% endif %}
+                </option>
+                {% endfor %}
+            </select>
+
+            <label for="description">Deskripsi</label>
+            <textarea id="description">{{ product.description if product and product.description else '' }}</textarea>
+
+            <label for="base_unit">Satuan Dasar</label>
+            <input
+                type="text"
+                id="base_unit"
+                maxlength="50"
+                placeholder="Contoh: gram, ml, pcs"
+                required
+                value="{{ product.base_unit if product else '' }}"
+            >
+
+            <label for="stock_quantity">Jumlah Stok</label>
+            <input
+                type="number"
+                id="stock_quantity"
+                min="0"
+                step="0.001"
+                required
+                value="{{ product.stock_quantity if product else '0' }}"
+            >
+
+            <label for="image">Foto Produk</label>
+            <input type="file" id="image" accept="image/*">
+
+            {% if product and product.image %}
+            <img
+                src="{{ product.image }}"
+                class="preview"
+                id="imagePreview"
+                alt="Foto produk"
+            >
+            {% else %}
+            <img
+                class="preview"
+                id="imagePreview"
+                alt="Preview foto"
+                style="display:none"
+            >
+            {% endif %}
+
+            <hr style="margin:25px 0; border:0; border-top:1px solid #e5e7eb;">
+
+            <h2>Pilihan Satuan dan Harga</h2>
+
+            <p class="muted">
+                Faktor konversi menunjukkan jumlah satuan dasar
+                dalam satu pilihan satuan.
+            </p>
+
+            <div id="unitsContainer"></div>
+
+            <button
+                type="button"
+                class="secondary"
+                id="addUnitButton"
+                style="margin-top:15px;"
+            >
+                + Tambah Satuan
+            </button>
+
+            <div class="actions">
+                <button
+                    type="submit"
+                    class="primary"
+                    id="saveButton"
+                >
+                    Simpan Produk
+                </button>
+
+                <a href="/producer/products/page" style="text-decoration:none;">
+                    <button type="button" class="secondary">
+                        Batal
+                    </button>
+                </a>
+            </div>
+
+        </form>
+    </section>
+</main>
+
+<script>
+const productData = document.getElementById("productData");
+
+const PRODUCT_ID = productData.dataset.productId
+    ? Number(productData.dataset.productId)
+    : null;
+
+let EXISTING_UNITS = [];
+
+try {
+    EXISTING_UNITS = JSON.parse(
+        productData.dataset.existingUnits || "[]"
+    );
+} catch (error) {
+    console.error("Gagal membaca data satuan:", error);
+}
+
+const unitsContainer = document.getElementById("unitsContainer");
+const imageInput = document.getElementById("image");
+const imagePreview = document.getElementById("imagePreview");
+const saveButton = document.getElementById("saveButton");
+const errorMessage = document.getElementById("errorMessage");
+
+// Menyimpan data lengkap satuan yang dihapus.
+const removedUnits = new Map();
+
+function showError(message) {
+    if (Array.isArray(message)) {
+        message = message
+            .map(item => item.msg || JSON.stringify(item))
+            .join(", ");
+    }
+
+    errorMessage.textContent = String(message);
+    errorMessage.style.display = "block";
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function clearError() {
+    errorMessage.textContent = "";
+    errorMessage.style.display = "none";
+}
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        };
+
+        return entities[character];
+    });
+}
+
+// ==========================================
+// TAMBAH SATUAN
+// ==========================================
+
+function addUnit(unit = null) {
+    const card = document.createElement("div");
+    card.className = "unit-card";
+
+    const unitId = unit?.id ?? "";
+
+    card.innerHTML = `
+        <input
+            type="hidden"
+            class="unit-id"
+            value="${escapeHTML(unitId)}"
+        >
+
+        <div class="unit-grid">
+            <div>
+                <label>Nama Satuan</label>
+                <input
+                    type="text"
+                    class="unit-name"
+                    maxlength="50"
+                    required
+                    placeholder="Contoh: kg"
+                    value="${escapeHTML(unit?.unit_name ?? "")}"
+                >
+            </div>
+
+            <div>
+                <label>Faktor Konversi</label>
+                <input
+                    type="number"
+                    class="unit-factor"
+                    min="0.001"
+                    step="0.001"
+                    required
+                    placeholder="Contoh: 1000"
+                    value="${escapeHTML(unit?.conversion_factor ?? 1)}"
+                >
+            </div>
+
+            <div>
+                <label>Harga (Rp)</label>
+                <input
+                    type="number"
+                    class="unit-price"
+                    min="0.01"
+                    step="0.01"
+                    required
+                    placeholder="Contoh: 15000"
+                    value="${escapeHTML(unit?.price ?? "")}"
+                >
+            </div>
+        </div>
+
+        <button type="button" class="danger remove-unit-button">
+            Hapus Satuan
+        </button>
+    `;
+
+    card.querySelector(".remove-unit-button")
+        .addEventListener("click", function() {
+
+            const id = card.querySelector(".unit-id").value;
+
+            if (id) {
+                removedUnits.set(Number(id), {
+                    id: Number(id),
+                    unit_name: card.querySelector(".unit-name").value.trim(),
+                    conversion_factor: Number(
+                        card.querySelector(".unit-factor").value
+                    ),
+                    price: Number(
+                        card.querySelector(".unit-price").value
+                    ),
+                    is_active: false
+                });
+            }
+
+            card.remove();
+        });
+
+    unitsContainer.appendChild(card);
+}
+
+// Muat satuan lama.
+EXISTING_UNITS.forEach(unit => addUnit(unit));
+
+if (EXISTING_UNITS.length === 0) {
+    addUnit();
+}
+
+document.getElementById("addUnitButton").addEventListener(
+    "click",
+    () => addUnit()
+);
+
+// ==========================================
+// PREVIEW FOTO
+// ==========================================
+
+imageInput.addEventListener("change", function() {
+    const file = this.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        showError("File harus berupa gambar.");
+        this.value = "";
+        return;
+    }
+
+    clearError();
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = "block";
+});
+
+// ==========================================
+// AMBIL DATA SATUAN AKTIF
+// ==========================================
+
+function getUnits() {
+    const cards = document.querySelectorAll(".unit-card");
+
+    return Array.from(cards).map(card => {
+        const id = card.querySelector(".unit-id").value;
+
+        const unit = {
+            unit_name: card.querySelector(".unit-name").value.trim(),
+            conversion_factor: Number(
+                card.querySelector(".unit-factor").value
+            ),
+            price: Number(
+                card.querySelector(".unit-price").value
+            ),
+            is_active: true
+        };
+
+        if (id) {
+            unit.id = Number(id);
+        }
+
+        return unit;
+    });
+}
+
+// ==========================================
+// UPLOAD FOTO
+// ==========================================
+
+async function uploadImage(productId) {
+    const file = imageInput.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+        `/producer/products/${productId}/image`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            Array.isArray(result.detail)
+                ? result.detail.map(item => item.msg).join(", ")
+                : result.detail || "Gagal mengunggah foto."
+        );
+    }
+}
+
+// ==========================================
+// SIMPAN PRODUK
+// ==========================================
+
+document.getElementById("productForm").addEventListener(
+    "submit",
+    async function(event) {
+        event.preventDefault();
+
+        clearError();
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Menyimpan...";
+
+        try {
+            const units = getUnits();
+
+            if (units.length === 0) {
+                throw new Error(
+                    "Tambahkan minimal satu pilihan satuan."
+                );
+            }
+
+            const unitNames = units.map(unit =>
+                unit.unit_name.toLowerCase()
+            );
+
+            if (new Set(unitNames).size !== unitNames.length) {
+                throw new Error("Nama satuan tidak boleh duplikat.");
+            }
+
+            const data = {
+                category_id: Number(
+                    document.getElementById("category_id").value
+                ),
+                name: document.getElementById("name").value.trim(),
+                description:
+                    document.getElementById("description").value.trim() || null,
+                base_unit:
+                    document.getElementById("base_unit").value.trim(),
+                stock_quantity: Number(
+                    document.getElementById("stock_quantity").value
+                )
+            };
+
+            if (!data.category_id) {
+                throw new Error("Pilih kategori produk terlebih dahulu.");
+            }
+
+            if (!data.name || !data.base_unit) {
+                throw new Error(
+                    "Nama produk dan satuan dasar wajib diisi."
+                );
+            }
+
+            if (
+                !Number.isFinite(data.stock_quantity) ||
+                data.stock_quantity < 0
+            ) {
+                throw new Error("Jumlah stok tidak valid.");
+            }
+
+            for (const unit of units) {
+                if (!unit.unit_name) {
+                    throw new Error("Nama satuan wajib diisi.");
+                }
+
+                if (
+                    !Number.isFinite(unit.conversion_factor) ||
+                    unit.conversion_factor <= 0
+                ) {
+                    throw new Error(
+                        "Faktor konversi harus lebih dari 0."
+                    );
+                }
+
+                if (
+                    !Number.isFinite(unit.price) ||
+                    unit.price <= 0
+                ) {
+                    throw new Error("Harga harus lebih dari 0.");
+                }
+            }
+
+            let productId = PRODUCT_ID;
+
+            if (PRODUCT_ID !== null) {
+
+                // Update informasi utama produk.
+                const response = await fetch(
+                    `/producer/products/${PRODUCT_ID}`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        Array.isArray(result.detail)
+                            ? result.detail.map(item => item.msg).join(", ")
+                            : result.detail || "Gagal mengedit produk."
+                    );
+                }
+
+                // Gabungkan satuan aktif dengan satuan yang dihapus.
+                const updatedUnits = [
+                    ...units,
+                    ...Array.from(removedUnits.values())
+                ];
+
+                const unitResponse = await fetch(
+                    `/producer/products/${PRODUCT_ID}/units`,
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            units: updatedUnits
+                        })
+                    }
+                );
+
+                const unitResult = await unitResponse.json();
+
+                if (!unitResponse.ok) {
+                    throw new Error(
+                        Array.isArray(unitResult.detail)
+                            ? unitResult.detail.map(item => item.msg).join(", ")
+                            : unitResult.detail || "Gagal memperbarui satuan."
+                    );
+                }
+
+            } else {
+
+                // Buat produk baru.
+                const createData = {
+                    ...data,
+                    units: units.map(unit => ({
+                        unit_name: unit.unit_name,
+                        conversion_factor: unit.conversion_factor,
+                        price: unit.price
+                    }))
+                };
+
+                const response = await fetch(
+                    "/producer/products/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(createData)
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        Array.isArray(result.detail)
+                            ? result.detail.map(item => item.msg).join(", ")
+                            : result.detail || "Gagal menambahkan produk."
+                    );
+                }
+
+                productId = result.id;
+            }
+
+            await uploadImage(productId);
+
+            alert("Produk berhasil disimpan!");
+
+            window.location.href = "/producer/products/page";
+
+        } catch (error) {
+            showError(error.message);
+
+            saveButton.disabled = false;
+            saveButton.textContent = "Simpan Produk";
+        }
+    }
+);
+</script>
+
+</body>
+</html>

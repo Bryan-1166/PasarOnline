@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ulasan Produk - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(1000px, 92%);
+            margin: 28px auto;
+        }
+
+        .intro, .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px #0000000b;
+        }
+
+        .muted {
+            color: #687585;
+            font-size: 14px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .summary-item {
+            background: #f0fdf4;
+            padding: 12px 18px;
+            border-radius: 9px;
+        }
+
+        .rating {
+            color: #eab308;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .review {
+            border-top: 1px solid #edf0f2;
+            padding: 15px 0;
+        }
+
+        .review:last-child {
+            padding-bottom: 0;
+        }
+
+        .empty {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            text-align: center;
+            color: #687585;
+        }
+
+        @media(max-width: 600px) {
+            header {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <strong>PasarOnline · Panel Producer</strong>
+
+    <nav style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <a href="/producer/profile">Profil Toko</a>
+        <a href="/producer/orders/page">Pesanan Masuk</a>
+        <a href="/producer/reviews/page">Ulasan Produk</a>
+    </nav>
+</header>
+
+<main>
+
+    <section class="intro">
+        <h1>Rating dan Ulasan Produk</h1>
+
+        <p class="muted">
+            Lihat penilaian dan komentar pelanggan terhadap produk toko Anda.
+        </p>
+    </section>
+
+    {% for entry in products %}
+
+    <section class="product-card">
+
+        <h2>{{ entry.product.name }}</h2>
+
+        <div class="summary">
+
+            <div class="summary-item">
+                <div class="muted">Rating Rata-rata</div>
+
+                <div class="rating">
+                    {% if entry.review_count > 0 %}
+                        ★ {{ "%.1f"|format(entry.average_rating) }} / 5
+                    {% else %}
+                        Belum ada rating
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="summary-item">
+                <div class="muted">Jumlah Ulasan</div>
+
+                <strong>
+                    {{ entry.review_count }} ulasan
+                </strong>
+            </div>
+
+        </div>
+
+        <h3>Ulasan Pelanggan</h3>
+
+        {% for item in entry.reviews %}
+
+        <div class="review">
+
+            <div class="rating">
+                {% for star in range(item.review.rating) %}★{% endfor %}
+                {% for star in range(5 - item.review.rating) %}☆{% endfor %}
+            </div>
+
+            <p>
+                {{ item.review.review or "Pelanggan tidak menulis komentar." }}
+            </p>
+
+            <small class="muted">
+                {{ item.review.created_at.strftime("%d-%m-%Y %H:%M") }}
+            </small>
+
+        </div>
+
+        {% else %}
+
+        <p class="muted">
+            Belum ada pelanggan yang memberikan ulasan untuk produk ini.
+        </p>
+
+        {% endfor %}
+
+    </section>
+
+    {% else %}
+
+    <div class="empty">
+        <h2>Belum Ada Produk</h2>
+
+        <p>
+            Produk toko Anda akan ditampilkan di halaman ini.
+        </p>
+    </div>
+
+    {% endfor %}
+
+</main>
+
+</body>
+</html>

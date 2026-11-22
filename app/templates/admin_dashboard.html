@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard Admin - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h2 {
+            margin: 0;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            background: #ffffff20;
+            padding: 10px 15px;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        header a:hover {
+            background: #ffffff35;
+        }
+
+        header a.logout {
+            background: #dc3545;
+        }
+
+        header a.logout:hover {
+            background: #bb2d3b;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: 30px auto;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome p {
+            color: #687585;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+        }
+
+        .card h3 {
+            margin: 0;
+            color: #687585;
+            font-size: 15px;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #176b45;
+            margin-top: 15px;
+        }
+
+        .description {
+            color: #8a949f;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        @media(max-width: 600px) {
+            header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <h2>PasarOnline · Panel Admin</h2>
+
+    <nav style="display:flex; gap:12px; flex-wrap:wrap;">
+
+        <a href="/dashboard/admin/accounts">
+            Manajemen Akun
+        </a>
+
+        <a href="/dashboard/admin/producers">
+            Manajemen Producer
+        </a>
+
+        <a href="/dashboard/admin/drivers">
+            Manajemen Driver
+        </a>
+
+        <a href="/dashboard/admin/products">
+            Manajemen Produk
+        </a>
+
+        <a href="/dashboard/admin/orders">
+            Manajemen Pesanan
+        </a>
+
+        <a href="/dashboard/admin/categories">
+            Manajemen Kategori
+        </a>
+
+        <a href="/dashboard/admin/reviews">
+            Manajemen Review
+        </a>
+
+        <a href="#" class="logout" onclick="logoutAdmin(event)">
+            Logout
+        </a>
+
+    </nav>
+
+</header>
+
+<main>
+
+    <section class="welcome">
+
+        <h1>Dashboard Admin</h1>
+
+        <p>
+            Selamat datang, {{ user.full_name }}.
+            Berikut ringkasan aktivitas PasarOnline.
+        </p>
+
+    </section>
+
+    <section class="dashboard-grid">
+
+        <div class="card">
+            <h3>Total Akun</h3>
+            <div class="number">{{ total_users }}</div>
+            <div class="description">
+                Seluruh akun terdaftar
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Total Customer</h3>
+            <div class="number">{{ total_customers }}</div>
+            <div class="description">
+                Akun pelanggan
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Total Producer</h3>
+            <div class="number">{{ total_producers }}</div>
+            <div class="description">
+                Toko yang terdaftar
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Total Driver</h3>
+            <div class="number">{{ total_drivers }}</div>
+            <div class="description">
+                Driver terdaftar
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Total Produk</h3>
+            <div class="number">{{ total_products }}</div>
+            <div class="description">
+                Produk dalam database
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Total Pesanan</h3>
+            <div class="number">{{ total_orders }}</div>
+            <div class="description">
+                Seluruh pesanan tercatat
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+    async function logoutAdmin(event) {
+        event.preventDefault();
+
+        const yakin = confirm("Apakah kamu yakin ingin logout?");
+
+        if (!yakin) {
+            return;
+        }
+
+        try {
+            const response = await fetch("/auth/logout", {
+                method: "POST"
+            });
+
+            if (response.ok) {
+                window.location.href = "/auth/login";
+            } else {
+                alert("Gagal logout. Silakan coba lagi.");
+            }
+
+        } catch (error) {
+            alert("Terjadi kesalahan saat logout.");
+        }
+    }
+</script>
+
+</body>
+</html>

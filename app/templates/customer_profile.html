@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - PasarOnline</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #263238;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #198754;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .navbar h2 {
+            font-size: 22px;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .nav-menu a:hover {
+            opacity: 0.8;
+        }
+
+        .logout-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .logout-button:hover {
+            background: #bb2d3b;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            margin-bottom: 25px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .page-title p {
+            color: #718096;
+        }
+
+        /* CARD */
+        .profile-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 19px;
+            margin-bottom: 22px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .info-item {
+            margin-bottom: 20px;
+        }
+
+        .info-item label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #475569;
+        }
+
+        .info-value {
+            background: #f8fafc;
+            padding: 13px 15px;
+            border-radius: 7px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* FORM */
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.12);
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        /* BUTTON */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: #198754;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #146c43;
+        }
+
+        .btn-back {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #475569;
+        }
+
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            color: #94a3b8;
+            padding: 25px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 16px 5%;
+            }
+
+            .nav-menu {
+                gap: 12px;
+            }
+
+            .container {
+                margin-top: 25px;
+            }
+
+            .profile-card {
+                padding: 20px;
+            }
+
+            .page-title h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <h2>PasarOnline</h2>
+
+        <div class="nav-menu">
+            <a href="/customer/catalog/dashboard">Beranda</a>
+            <a href="/customer/orders/">Pesanan</a>
+            <a href="/customer/profile">Profil</a>
+
+            <button
+                type="button"
+                class="logout-button"
+                onclick="logout()">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+
+        <div class="page-title">
+            <h1>Profil Saya</h1>
+            <p>Kelola informasi akun dan alamat pengiriman Anda.</p>
+        </div>
+
+        <!-- INFORMASI AKUN -->
+        <section class="profile-card">
+
+            <h3 class="section-title">Informasi Akun</h3>
+
+            <div class="info-item">
+                <label>Nama Lengkap</label>
+                <div class="info-value">
+                    {{ user.full_name }}
+                </div>
+            </div>
+
+            <div class="info-item">
+                <label>Email</label>
+                <div class="info-value">
+                    {{ user.email }}
+                </div>
+            </div>
+
+        </section>
+
+        <!-- INFORMASI KONTAK -->
+        <section class="profile-card">
+
+            <h3 class="section-title">
+                Informasi Kontak dan Alamat
+            </h3>
+
+            <form action="/customer/profile" method="POST">
+
+                <div class="info-item">
+                    <label for="phone">Nomor HP</label>
+
+                    <input
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value="{{ profile.phone if profile else '' }}"
+                        placeholder="Masukkan nomor HP"
+                        required
+                    >
+                </div>
+
+                <div class="info-item">
+                    <label for="address">Alamat Utama</label>
+
+                    <textarea
+                        id="address"
+                        name="address"
+                        placeholder="Masukkan alamat lengkap"
+                        required
+                    >{{ profile.address if profile else '' }}</textarea>
+                </div>
+
+                <div class="button-group">
+
+                    <button
+                        type="submit"
+                        class="btn btn-save">
+                        Simpan Profil
+                    </button>
+
+                    <a
+                        href="/customer/catalog/dashboard"
+                        class="btn btn-back">
+                        Kembali
+                    </a>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        &copy; 2026 PasarOnline
+    </footer>
+
+    <!-- LOGOUT SCRIPT -->
+    <script>
+        async function logout() {
+            const confirmation = confirm(
+                "Apakah Anda yakin ingin logout?"
+            );
+
+            if (!confirmation) {
+                return;
+            }
+
+            try {
+                const response = await fetch("/auth/logout", {
+                    method: "POST"
+                });
+
+                if (response.ok) {
+                    window.location.href = "/auth/login";
+                } else {
+                    alert("Logout gagal. Silakan coba kembali.");
+                }
+
+            } catch (error) {
+                alert("Terjadi kesalahan saat logout.");
+                console.error(error);
+            }
+        }
+    </script>
+
+</body>
+</html>

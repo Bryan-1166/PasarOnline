@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manajemen Akun - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: 30px auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        th, td {
+            padding: 13px 10px;
+            border-bottom: 1px solid #edf0f2;
+            text-align: left;
+        }
+
+        th {
+            color: #687585;
+            font-size: 14px;
+        }
+
+        .active {
+            color: #176b45;
+            font-weight: bold;
+        }
+
+        .inactive {
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        button {
+            border: none;
+            padding: 9px 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            background: #c0392b;
+        }
+
+        button.activate {
+            background: #176b45;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 18px;
+            color: #176b45;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <strong>PasarOnline · Panel Admin</strong>
+    <a href="/dashboard/admin/page">Dashboard</a>
+</header>
+
+<main>
+
+    <a class="back" href="/dashboard/admin/page">
+        ← Kembali ke Dashboard
+    </a>
+
+    <section class="panel">
+
+        <h1>Manajemen Akun</h1>
+
+        <p>
+            Daftar seluruh akun yang terdaftar di PasarOnline.
+        </p>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for account in accounts %}
+
+                <tr>
+                    <td>{{ account.id }}</td>
+                    <td>{{ account.full_name }}</td>
+                    <td>{{ account.email }}</td>
+                    <td>{{ account.role }}</td>
+
+                    <td>
+                        {% if account.is_active %}
+                            <span class="active">Aktif</span>
+                        {% else %}
+                            <span class="inactive">Nonaktif</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+
+                        {% if account.id != user.id %}
+
+                        <form
+                            method="POST"
+                            action="/dashboard/admin/accounts/{{ account.id }}/toggle"
+                        >
+
+                            {% if account.is_active %}
+                                <button type="submit">
+                                    Nonaktifkan
+                                </button>
+                            {% else %}
+                                <button
+                                    type="submit"
+                                    class="activate"
+                                >
+                                    Aktifkan
+                                </button>
+                            {% endif %}
+
+                        </form>
+
+                        {% else %}
+                            <span>Akun Anda</span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="6">
+                        Belum ada akun.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+</body>
+</html>

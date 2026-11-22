@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Kategori - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: 30px auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+        }
+
+        .category-card {
+            border: 1px solid #e7ebef;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 16px;
+        }
+
+        .category-card h2 {
+            margin-top: 0;
+            color: #176b45;
+        }
+
+        .info {
+            margin: 12px 0;
+            line-height: 1.5;
+        }
+
+        .muted {
+            color: #687585;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .active {
+            background: #dff5e8;
+            color: #176b45;
+        }
+
+        .inactive {
+            background: #ffe2e0;
+            color: #c0392b;
+        }
+
+        button {
+            border: none;
+            border-radius: 7px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .deactivate {
+            background: #ffe2e0;
+            color: #c0392b;
+        }
+
+        .activate {
+            background: #dff5e8;
+            color: #176b45;
+        }
+
+        .empty {
+            text-align: center;
+            color: #687585;
+            padding: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <strong>PasarOnline · Panel Admin</strong>
+    <a href="/dashboard/admin/page">Kembali ke Dashboard</a>
+</header>
+
+<main>
+    <section class="panel">
+
+        <h1>Manajemen Kategori</h1>
+
+        <p class="muted">
+            Daftar seluruh kategori produk PasarOnline.
+        </p>
+
+        <strong>Total Kategori: {{ categories|length }}</strong>
+
+        {% for category in categories %}
+
+        <div class="category-card">
+
+            <h2>{{ category.name }}</h2>
+
+            <p class="info">
+                <strong>Deskripsi:</strong>
+                {{ category.description or "Belum ada deskripsi." }}
+            </p>
+
+            <p class="info">
+                <strong>Status:</strong>
+
+                {% if category.is_active %}
+                    <span class="status active">Aktif</span>
+                {% else %}
+                    <span class="status inactive">Nonaktif</span>
+                {% endif %}
+            </p>
+
+            <p class="muted">
+                ID Kategori: {{ category.id }}
+            </p>
+
+            <form
+                method="POST"
+                action="/dashboard/admin/categories/{{ category.id }}/toggle"
+                onsubmit="return confirm('Yakin ingin mengubah status kategori ini?')"
+            >
+                {% if category.is_active %}
+                    <button type="submit" class="deactivate">
+                        Nonaktifkan Kategori
+                    </button>
+                {% else %}
+                    <button type="submit" class="activate">
+                        Aktifkan Kategori
+                    </button>
+                {% endif %}
+            </form>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            <h3>Belum Ada Kategori</h3>
+            <p>Belum ada kategori produk yang terdaftar.</p>
+        </div>
+
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

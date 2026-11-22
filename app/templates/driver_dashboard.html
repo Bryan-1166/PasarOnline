@@ -1,0 +1,579 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Driver - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #263238;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .header,
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .delivery-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .pickup {
+            background: #f7f8fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .status-progress {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-done {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .empty {
+            color: #777;
+            padding: 20px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 11px 18px;
+            border: none;
+            border-radius: 7px;
+            background: #1976d2;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #125ca1;
+        }
+
+        .btn-success {
+            background: #2e7d32;
+        }
+
+        .btn-success:hover {
+            background: #1b5e20;
+        }
+
+        .timer {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 12px 0;
+            color: #1976d2;
+        }
+
+        .info-box {
+            background: #f7f8fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .customer-info {
+            background: #eef5ff;
+            border-left: 4px solid #1976d2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .header-top {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+
+        <div class="header-top">
+            <div>
+                <h1>Dashboard Driver</h1>
+                <p>Selamat datang, {{ user.full_name }}</p>
+            </div>
+
+            <a href="/driver/profile" class="btn">
+                Profil Saya
+            </a>
+        </div>
+
+        <p>
+            Status driver:
+            <strong>{{ driver.status }}</strong>
+        </p>
+
+    </div>
+
+
+    <!-- PESANAN TERSEDIA -->
+    <div class="section">
+
+        <h2>Pesanan Menunggu Driver</h2>
+
+        <p>Pesanan yang seluruh barangnya sudah siap diambil.</p>
+
+        {% if available_deliveries and driver.status == "standby" %}
+
+            {% for entry in available_deliveries %}
+
+                <div class="delivery-card">
+
+                    <h3>
+                        Pesanan #{{ entry["order"].order_number }}
+                    </h3>
+
+                    <span class="status">
+                        Siap Diambil
+                    </span>
+
+                    <p>
+                        Total pesanan:
+                        <strong>
+                            Rp{{ "{:,.0f}".format(entry["order"].total_amount) }}
+                        </strong>
+                    </p>
+
+                    <div class="customer-info">
+
+                        <h4>Informasi Customer</h4>
+
+                        <p>
+                            Nama Customer:
+                            {{ entry["customer"].full_name if entry["customer"] else "-" }}
+                        </p>
+
+                        <p>
+                            Alamat Tujuan:
+                            {{ entry["order"].delivery_address or "Tidak ada alamat" }}
+                        </p>
+
+                    </div>
+
+                    <h4>Lokasi Pickup</h4>
+
+                    {% for pickup in entry["pickups"] %}
+
+                        <div class="pickup">
+
+                            <strong>{{ pickup.producer_name }}</strong>
+
+                            <p>
+                                Pasar: {{ pickup.market_name }}<br>
+                                Blok: {{ pickup.block or "-" }}<br>
+                                Kios: {{ pickup.stall_number }}<br>
+                                Lantai: {{ pickup.floor or "-" }}
+                            </p>
+
+                        </div>
+
+                    {% endfor %}
+
+                    <form
+                        method="POST"
+                        action="/driver/deliveries/{{ entry['delivery'].id }}/take"
+                        onsubmit="return confirm('Ambil pesanan ini?')"
+                    >
+
+                        <button type="submit" class="btn">
+                            Ambil Pesanan
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty">
+
+                {% if driver.status != "standby" %}
+
+                    Kamu sedang bertugas.
+
+                {% else %}
+
+                    Belum ada pesanan yang siap diambil.
+
+                {% endif %}
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- PESANAN DRIVER -->
+    <div class="section">
+
+        <h2>Pesanan Saya</h2>
+
+        {% if my_deliveries %}
+
+            {% for entry in my_deliveries %}
+
+                {% set delivery = entry["delivery"] %}
+
+                <div class="delivery-card">
+
+                    <h3>Delivery #{{ delivery.id }}</h3>
+
+                    <p>
+                        Order ID:
+                        {{ delivery.order_id }}
+                    </p>
+
+                    <p>
+                        Status:
+                        <strong>{{ delivery.status }}</strong>
+                    </p>
+
+
+                    <!-- INFORMASI CUSTOMER -->
+                    {% if entry["order"] %}
+
+                        <div class="customer-info">
+
+                            <h4>Informasi Customer</h4>
+
+                            <p>
+                                Nama Customer:
+                                {{ entry["customer"].full_name if entry["customer"] else "-" }}
+                            </p>
+
+                            <p>
+                                Alamat Tujuan:
+                                {{ entry["order"].delivery_address or "Tidak ada alamat" }}
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- DAFTAR PICKUP -->
+                    <h4>Proses Pickup Producer</h4>
+
+                    {% for pickup in entry["pickups"] %}
+
+                        <div class="pickup">
+
+                            <strong>
+                                {{ pickup.producer_name }}
+                            </strong>
+
+                            <p>
+                                Pasar: {{ pickup.market_name }}<br>
+                                Blok: {{ pickup.block or "-" }}<br>
+                                Kios: {{ pickup.stall_number }}<br>
+                                Lantai: {{ pickup.floor or "-" }}
+                            </p>
+
+                            {% if pickup.status == "ready" %}
+
+                                <span class="status">
+                                    Menunggu Pickup
+                                </span>
+
+                            {% elif pickup.status == "in_progress" %}
+
+                                <span class="status status-progress">
+                                    Pickup Berlangsung
+                                </span>
+
+                            {% elif pickup.status == "picked_up" %}
+
+                                <span class="status status-done">
+                                    Barang Sudah Diambil
+                                </span>
+
+                            {% else %}
+
+                                <span class="status">
+                                    {{ pickup.status }}
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+
+                    <!-- PICKUP SEDANG BERLANGSUNG -->
+                    {% if entry["active_pickup"] %}
+
+                        <div class="info-box">
+
+                            <h4>
+                                Sedang mengambil barang dari:
+                                {{ entry["active_pickup"].producer_name }}
+                            </h4>
+
+                            <p>Waktu pickup tersisa:</p>
+
+                            <div
+                                class="timer"
+                                data-deadline="{{ delivery.pickup_deadline_at.isoformat() }}"
+                            >
+                                Menghitung...
+                            </div>
+
+                            <form
+                                method="POST"
+                                action="/driver/deliveries/{{ delivery.id }}/complete-pickup"
+                                onsubmit="return confirm('Konfirmasi barang sudah diambil?')"
+                            >
+
+                                <button type="submit" class="btn btn-success">
+                                    Barang Sudah Diambil
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                    <!-- PICKUP BERIKUTNYA -->
+                    {% elif entry["next_pickup"] %}
+
+                        <div class="info-box">
+
+                            <h4>
+                                Pickup berikutnya:
+                                {{ entry["next_pickup"].producer_name }}
+                            </h4>
+
+                            <form
+                                method="POST"
+                                action="/driver/deliveries/{{ delivery.id }}/start-pickup"
+                                onsubmit="return confirm('Mulai pickup di lokasi ini?')"
+                            >
+
+                                <button type="submit" class="btn">
+                                    Mulai Pickup 5 Menit
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                    <!-- SEMUA PICKUP SELESAI -->
+                    {% elif delivery.status == "pickup_completed" %}
+
+                        <div class="info-box">
+
+                            <span class="status status-done">
+                                Semua Barang Sudah Diambil
+                            </span>
+
+                            <h4>Pickup Selesai!</h4>
+
+                            <p>
+                                Semua lokasi producer sudah selesai dikunjungi.
+                                Driver dapat memulai perjalanan menuju customer.
+                            </p>
+
+                            <form
+                                method="POST"
+                                action="/driver/deliveries/{{ delivery.id }}/start-travel"
+                                onsubmit="return confirm('Mulai perjalanan menuju customer?')"
+                            >
+
+                                <button type="submit" class="btn">
+                                    Mulai Perjalanan 15 Menit
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                    <!-- SEDANG DALAM PERJALANAN -->
+                    {% elif delivery.status == "in_transit" %}
+
+                        <div class="info-box">
+
+                            <span class="status status-progress">
+                                Sedang Dalam Perjalanan
+                            </span>
+
+                            <h4>Menuju Alamat Customer</h4>
+
+                            <p>
+                                Alamat tujuan:
+                                {{ entry["order"].delivery_address if entry["order"] else "Tidak ada alamat" }}
+                            </p>
+
+                            <p>Estimasi waktu perjalanan tersisa:</p>
+
+                            <div
+                                class="timer"
+                                data-deadline="{{ delivery.estimated_arrival_at.isoformat() }}"
+                            >
+                                Menghitung...
+                            </div>
+
+                            <form
+                                method="POST"
+                                action="/driver/deliveries/{{ delivery.id }}/complete"
+                                onsubmit="return confirm('Konfirmasi pesanan sudah diterima customer?')"
+                            >
+
+                                <button type="submit" class="btn btn-success">
+                                    Selesaikan Pengantaran
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                    <!-- PENGANTARAN SELESAI -->
+                    {% elif delivery.status == "completed" %}
+
+                        <div class="info-box">
+
+                            <span class="status status-done">
+                                Pengantaran Selesai
+                            </span>
+
+                            <h4>Pesanan Berhasil Diantarkan!</h4>
+
+                            <p>
+                                Pengantaran telah diselesaikan.
+                            </p>
+
+                            <p>
+                                Status driver:
+                                <strong>Standby</strong>
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty">
+                Kamu belum mengambil pesanan.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- COUNTDOWN -->
+<script>
+
+    function updateTimers() {
+
+        document.querySelectorAll(".timer").forEach(timer => {
+
+            const deadline = new Date(
+                timer.dataset.deadline
+            ).getTime();
+
+            const now = Date.now();
+
+            let remaining = Math.max(
+                0,
+                Math.floor((deadline - now) / 1000)
+            );
+
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+
+            timer.textContent =
+                String(minutes).padStart(2, "0") +
+                ":" +
+                String(seconds).padStart(2, "0");
+
+            if (remaining === 0) {
+                timer.textContent =
+                    "00:00 - Waktu estimasi selesai";
+            }
+
+        });
+
+    }
+
+    updateTimers();
+
+    setInterval(updateTimers, 1000);
+
+</script>
+
+</body>
+</html>
+  

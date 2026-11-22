@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pesanan - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: 30px auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+        }
+
+        .order-card {
+            border: 1px solid #e7ebef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 18px;
+        }
+
+        .order-card h2 {
+            margin-top: 0;
+            color: #176b45;
+        }
+
+        .info {
+            margin: 11px 0;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .muted {
+            color: #687585;
+        }
+
+        .section-title {
+            margin-top: 22px;
+            margin-bottom: 10px;
+            color: #176b45;
+            border-bottom: 1px solid #e7ebef;
+            padding-bottom: 7px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .waiting {
+            background: #fff0cf;
+            color: #986500;
+        }
+
+        .success {
+            background: #dff5e8;
+            color: #176b45;
+        }
+
+        .other {
+            background: #e9edf2;
+            color: #445266;
+        }
+
+        .empty {
+            text-align: center;
+            color: #687585;
+            padding: 25px;
+        }
+
+        @media (max-width: 600px) {
+            .panel {
+                padding: 16px;
+            }
+
+            .order-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <strong>PasarOnline · Panel Admin</strong>
+    <a href="/dashboard/admin/page">Kembali ke Dashboard</a>
+</header>
+
+<main>
+    <section class="panel">
+
+        <h1>Manajemen Pesanan</h1>
+
+        <p class="muted">
+            Daftar seluruh pesanan pelanggan beserta informasi pembayaran
+            dan pengiriman.
+        </p>
+
+        <strong>Total Pesanan: {{ orders|length }}</strong>
+
+        {% for order, customer, payment, delivery in orders %}
+
+        <div class="order-card">
+
+            <h2>Pesanan {{ order.order_number }}</h2>
+
+            <h3 class="section-title">Informasi Pelanggan</h3>
+
+            <p class="info">
+                <strong>Nama:</strong> {{ customer.full_name }}
+            </p>
+
+            <p class="info">
+                <strong>Email:</strong> {{ customer.email }}
+            </p>
+
+            <h3 class="section-title">Informasi Pesanan</h3>
+
+            <p class="info">
+                <strong>Subtotal:</strong>
+                Rp {{ "{:,.2f}".format(order.subtotal|float) }}
+            </p>
+
+            <p class="info">
+                <strong>Biaya Pengantaran:</strong>
+                Rp {{ "{:,.2f}".format(order.delivery_fee|float) }}
+            </p>
+
+            <p class="info">
+                <strong>Total Pembayaran:</strong>
+                Rp {{ "{:,.2f}".format(order.total_amount|float) }}
+            </p>
+
+            <p class="info">
+                <strong>Alamat Pengiriman:</strong>
+                {{ order.delivery_address or "Belum diisi" }}
+            </p>
+
+            <p class="info">
+                <strong>Status Pesanan:</strong>
+                <span class="status other">
+                    {{ order.status|replace("_", " ")|capitalize }}
+                </span>
+            </p>
+
+            <p class="info">
+                <strong>Tanggal Pesanan:</strong>
+                {{ order.created_at.strftime("%d-%m-%Y %H:%M") }}
+            </p>
+
+            <h3 class="section-title">Informasi Pembayaran</h3>
+
+            {% if payment %}
+
+                <p class="info">
+                    <strong>Metode Pembayaran:</strong>
+                    {{ payment.payment_method|replace("_", " ")|capitalize }}
+                </p>
+
+                <p class="info">
+                    <strong>Nomor Virtual Account:</strong>
+                    {{ payment.va_number or "-" }}
+                </p>
+
+                <p class="info">
+                    <strong>Jumlah Pembayaran:</strong>
+                    Rp {{ "{:,.2f}".format(payment.amount|float) }}
+                </p>
+
+                <p class="info">
+                    <strong>Status Pembayaran:</strong>
+                    <span class="status other">
+                        {{ payment.status|replace("_", " ")|capitalize }}
+                    </span>
+                </p>
+
+                {% if payment.confirmed_at %}
+                    <p class="info">
+                        <strong>Waktu Konfirmasi:</strong>
+                        {{ payment.confirmed_at.strftime("%d-%m-%Y %H:%M") }}
+                    </p>
+                {% endif %}
+
+            {% else %}
+
+                <p class="muted">Data pembayaran belum tersedia.</p>
+
+            {% endif %}
+
+            <h3 class="section-title">Informasi Pengiriman</h3>
+
+            {% if delivery %}
+
+                <p class="info">
+                    <strong>Status Pengiriman:</strong>
+                    <span class="status other">
+                        {{ delivery.status|replace("_", " ")|capitalize }}
+                    </span>
+                </p>
+
+                <p class="info">
+                    <strong>ID Driver:</strong>
+                    {{ delivery.driver_id or "Belum ditugaskan" }}
+                </p>
+
+                <p class="info">
+                    <strong>Catatan:</strong>
+                    {{ delivery.notes or "-" }}
+                </p>
+
+                {% if delivery.estimated_arrival_at %}
+                    <p class="info">
+                        <strong>Estimasi Tiba:</strong>
+                        {{ delivery.estimated_arrival_at.strftime("%d-%m-%Y %H:%M") }}
+                    </p>
+                {% endif %}
+
+                {% if delivery.completed_at %}
+                    <p class="info">
+                        <strong>Pengiriman Selesai:</strong>
+                        {{ delivery.completed_at.strftime("%d-%m-%Y %H:%M") }}
+                    </p>
+                {% endif %}
+
+            {% else %}
+
+                <p class="muted">Data pengiriman belum tersedia.</p>
+
+            {% endif %}
+
+            <p class="muted">
+                ID Pesanan: {{ order.id }}
+                · ID Pelanggan: {{ customer.id }}
+            </p>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            <h3>Belum Ada Pesanan</h3>
+            <p>Belum ada transaksi yang tercatat.</p>
+        </div>
+
+        {% endfor %}
+
+    </section>
+</main>
+
+</body>
+</html>

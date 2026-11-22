@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manajemen Producer - PasarOnline</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #243040;
+        }
+
+        header {
+            background: #176b45;
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        main {
+            width: min(1100px, 92%);
+            margin: 30px auto;
+        }
+
+        .panel {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px #0000000b;
+            margin-bottom: 20px;
+        }
+
+        .producer-card {
+            border: 1px solid #e7ebef;
+            border-radius: 10px;
+            padding: 18px;
+            margin-top: 16px;
+        }
+
+        .producer-card h2 {
+            margin-top: 0;
+            color: #176b45;
+        }
+
+        .info {
+            margin: 9px 0;
+            line-height: 1.5;
+        }
+
+        .muted {
+            color: #687585;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .active {
+            background: #dff5e8;
+            color: #176b45;
+        }
+
+        .inactive {
+            background: #ffe2e0;
+            color: #c0392b;
+        }
+
+        .empty {
+            text-align: center;
+            color: #687585;
+            padding: 25px;
+        }
+
+        @media(max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <strong>PasarOnline · Panel Admin</strong>
+
+    <nav>
+        <a href="/dashboard/admin/page">
+            Kembali ke Dashboard
+        </a>
+    </nav>
+</header>
+
+<main>
+
+    <section class="panel">
+
+        <h1>Manajemen Producer</h1>
+
+        <p class="muted">
+            Daftar seluruh toko Producer yang terdaftar di PasarOnline.
+        </p>
+
+        <strong>
+            Total Producer: {{ producers|length }}
+        </strong>
+
+        {% for producer, account in producers %}
+
+        <div class="producer-card">
+
+            <h2>{{ producer.shop_name }}</h2>
+
+            <p class="info">
+                <strong>Nama Pemilik:</strong>
+                {{ account.full_name }}
+            </p>
+
+            <p class="info">
+                <strong>Email:</strong>
+                {{ account.email }}
+            </p>
+
+            <p class="info">
+                <strong>Nomor Telepon:</strong>
+                {{ producer.phone }}
+            </p>
+
+            <p class="info">
+                <strong>Lokasi Pasar:</strong>
+                {{ producer.market_name }}
+            </p>
+
+            <p class="info">
+                <strong>Blok:</strong>
+                {{ producer.block or "-" }}
+            </p>
+
+            <p class="info">
+                <strong>Nomor Lapak:</strong>
+                {{ producer.stall_number }}
+            </p>
+
+            <p class="info">
+                <strong>Lantai:</strong>
+                {{ producer.floor or "-" }}
+            </p>
+
+            <p class="info">
+                <strong>Deskripsi:</strong>
+                {{ producer.description or "Belum ada deskripsi." }}
+            </p>
+
+            <p class="info">
+                <strong>Status Akun:</strong>
+
+                {% if account.is_active %}
+                    <span class="status active">Aktif</span>
+                {% else %}
+                    <span class="status inactive">Nonaktif</span>
+                {% endif %}
+            </p>
+
+            <p class="muted">
+                ID Producer: {{ producer.id }}
+                · ID Akun: {{ account.id }}
+            </p>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty">
+            <h3>Belum Ada Producer</h3>
+            <p>Belum ada toko yang terdaftar.</p>
+        </div>
+
+        {% endfor %}
+
+    </section>
+
+</main>
+
+</body>
+</html>

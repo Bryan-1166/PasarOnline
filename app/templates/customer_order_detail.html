@@ -1,0 +1,440 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pesanan - PasarOnline</title>
+    <link rel="stylesheet" href="/public/css/customer.css">
+
+    <style>
+        .detail-section {
+            padding: 30px 0;
+        }
+
+        .detail-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .detail-card h3 {
+            margin-top: 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .product-row, .pickup-row, .history-row {
+            padding: 13px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status-label {
+            display: inline-block;
+            padding: 6px 11px;
+            background: #e0f2fe;
+            color: #075985;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: #15803d;
+        }
+
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* RATING DAN ULASAN */
+        .review-box {
+            margin-top: 18px;
+            padding: 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .review-box h4 {
+            margin-top: 0;
+        }
+
+        .rating-options {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+
+        .rating-options label {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .rating-options input {
+            margin-right: 4px;
+        }
+
+        .review-box textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .review-submit {
+            margin-top: 12px;
+            padding: 10px 18px;
+            background: #15803d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .review-submit:hover {
+            background: #166534;
+        }
+
+        .review-result {
+            margin-top: 15px;
+            padding: 14px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+        }
+
+        .stars {
+            color: #eab308;
+            font-size: 20px;
+        }
+
+        .review-note {
+            color: #6b7280;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-content">
+        <h1 class="logo">Pasar<span>Online</span></h1>
+
+        <div class="nav-links">
+            <a href="/customer/catalog/dashboard">Beranda</a>
+            <a href="/customer/cart/page">Keranjang</a>
+            <a href="/customer/orders/">Pesanan Saya</a>
+        </div>
+    </div>
+</header>
+
+<main class="container detail-section">
+
+    <a href="/customer/orders/" class="back-btn">
+        ← Kembali ke Riwayat Pesanan
+    </a>
+
+    <div class="detail-card">
+        <h2>Detail Pesanan</h2>
+
+        <div class="detail-row">
+            <span>Nomor Pesanan</span>
+            <strong>{{ order.order_number }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Tanggal</span>
+            <strong>{{ order.created_at.strftime("%d-%m-%Y %H:%M") }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Status Pesanan</span>
+            <span class="status-label">
+                {{ order.status.replace("_", " ")|title }}
+            </span>
+        </div>
+
+        <div class="detail-row">
+            <span>Catatan Pengiriman</span>
+            <strong>{{ order.delivery_address or "-" }}</strong>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h3>Produk yang Dibeli</h3>
+
+        {% for item in order_items %}
+
+        <div class="product-row">
+            <strong>{{ item.product_name }}</strong>
+
+            <p>Penjual: {{ item.producer_name }}</p>
+
+            <p>
+                {{ item.quantity }} {{ item.unit_name }}
+                × Rp {{ "{:,.0f}".format(item.unit_price|float).replace(",", ".") }}
+            </p>
+
+            <strong>
+                Subtotal:
+                Rp {{ "{:,.0f}".format(item.subtotal|float).replace(",", ".") }}
+            </strong>
+
+            {% set item_review = reviews.get(item.id) %}
+
+            {% if item_review %}
+
+            <div class="review-result">
+                <strong>Ulasan Anda</strong>
+
+                <p class="stars">
+                    {% for i in range(item_review.rating) %}★{% endfor %}
+                    {% for i in range(5 - item_review.rating) %}☆{% endfor %}
+                </p>
+
+                <p>{{ item_review.review or "Tidak ada komentar." }}</p>
+
+                <small>
+                    Dikirim pada:
+                    {{ item_review.created_at.strftime("%d-%m-%Y %H:%M") }}
+                </small>
+            </div>
+
+            {% elif order.status == "delivered" and item.product_id %}
+
+            <div class="review-box">
+                <h4>Berikan Rating dan Ulasan</h4>
+
+                <form
+                    method="POST"
+                    action="/customer/orders/{{ order.id }}/review/{{ item.id }}"
+                >
+
+                    <label><strong>Rating Produk</strong></label>
+
+                    <div class="rating-options">
+                        {% for star in range(1, 6) %}
+                        <label>
+                            <input
+                                type="radio"
+                                name="rating"
+                                value="{{ star }}"
+                                required
+                            >
+                            {{ star }} ★
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <label for="review-{{ item.id }}">
+                        <strong>Ulasan Produk</strong>
+                    </label>
+
+                    <textarea
+                        id="review-{{ item.id }}"
+                        name="review"
+                        maxlength="1000"
+                        placeholder="Bagaimana kualitas produk yang Anda terima?"
+                    ></textarea>
+
+                    <button type="submit" class="review-submit">
+                        Kirim Ulasan
+                    </button>
+
+                </form>
+            </div>
+
+            {% elif order.status != "delivered" %}
+
+            <p class="review-note">
+                Ulasan dapat diberikan setelah pesanan selesai diterima.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+        {% else %}
+
+        <p>Tidak ada detail produk.</p>
+
+        {% endfor %}
+    </div>
+
+    <div class="detail-card">
+        <h3>Rincian Pembayaran</h3>
+
+        <div class="detail-row">
+            <span>Subtotal Produk</span>
+            <strong>
+                Rp {{ "{:,.0f}".format(order.subtotal|float).replace(",", ".") }}
+            </strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Biaya Pengiriman</span>
+            <strong>
+                Rp {{ "{:,.0f}".format(order.delivery_fee|float).replace(",", ".") }}
+            </strong>
+        </div>
+
+        <div class="detail-row total">
+            <span>Total</span>
+            <strong>
+                Rp {{ "{:,.0f}".format(order.total_amount|float).replace(",", ".") }}
+            </strong>
+        </div>
+
+        {% if payment %}
+
+        <div class="detail-row">
+            <span>Metode Pembayaran</span>
+            <strong>{{ payment.payment_method|replace("_", " ")|title }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Nomor Virtual Account</span>
+            <strong>{{ payment.va_number or "-" }}</strong>
+        </div>
+
+        <div class="detail-row">
+            <span>Status Pembayaran</span>
+            <strong>{{ payment.status.replace("_", " ")|title }}</strong>
+        </div>
+
+        {% if payment.confirmed_at %}
+        <div class="detail-row">
+            <span>Dikonfirmasi Pada</span>
+            <strong>{{ payment.confirmed_at.strftime("%d-%m-%Y %H:%M") }}</strong>
+        </div>
+        {% endif %}
+
+        {% endif %}
+    </div>
+
+    <div class="detail-card">
+        <h3>Informasi Pengiriman</h3>
+
+        {% if delivery %}
+
+        <div class="detail-row">
+            <span>Status Pengiriman</span>
+            <strong>{{ delivery.status.replace("_", " ")|title }}</strong>
+        </div>
+
+        {% if delivery.travel_started_at %}
+        <div class="detail-row">
+            <span>Mulai Perjalanan</span>
+            <strong>{{ delivery.travel_started_at.strftime("%d-%m-%Y %H:%M") }}</strong>
+        </div>
+        {% endif %}
+
+        {% if delivery.estimated_arrival_at %}
+        <div class="detail-row">
+            <span>Estimasi Tiba</span>
+            <strong>{{ delivery.estimated_arrival_at.strftime("%d-%m-%Y %H:%M") }}</strong>
+        </div>
+        {% endif %}
+
+        {% if delivery.completed_at %}
+        <div class="detail-row">
+            <span>Pesanan Selesai</span>
+            <strong>{{ delivery.completed_at.strftime("%d-%m-%Y %H:%M") }}</strong>
+        </div>
+        {% endif %}
+
+        {% else %}
+
+        <p>Informasi pengiriman belum tersedia.</p>
+
+        {% endif %}
+    </div>
+
+    {% if delivery and pickups %}
+
+    <div class="detail-card">
+        <h3>Lokasi Pengambilan Barang</h3>
+
+        {% for pickup in pickups %}
+
+        <div class="pickup-row">
+            <strong>{{ pickup.producer_name }}</strong>
+
+            <p>
+                Pasar: {{ pickup.market_name }}<br>
+                Blok: {{ pickup.block or "-" }}<br>
+                Lapak: {{ pickup.stall_number }}<br>
+                Lantai: {{ pickup.floor or "-" }}
+            </p>
+
+            <span class="status-label">
+                {{ pickup.status.replace("_", " ")|title }}
+            </span>
+
+            {% if pickup.picked_up_at %}
+            <p>
+                Diambil pada:
+                {{ pickup.picked_up_at.strftime("%d-%m-%Y %H:%M") }}
+            </p>
+            {% endif %}
+        </div>
+
+        {% endfor %}
+    </div>
+
+    {% endif %}
+
+    <div class="detail-card">
+        <h3>Riwayat Status Pesanan</h3>
+
+        {% for history in status_history %}
+
+        <div class="history-row">
+            <strong>
+                {{ history.status.replace("_", " ")|title }}
+            </strong>
+
+            <p>{{ history.description or "-" }}</p>
+
+            <small>
+                {{ history.created_at.strftime("%d-%m-%Y %H:%M") }}
+            </small>
+        </div>
+
+        {% else %}
+
+        <p>Belum ada catatan perubahan status.</p>
+
+        {% endfor %}
+    </div>
+
+</main>
+
+<footer>
+    <p>© 2026 PasarOnline.</p>
+</footer>
+
+</body>
+</html>

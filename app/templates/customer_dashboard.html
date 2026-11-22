@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PasarOnline - Belanja Kebutuhan Harian</title>
+    <link rel="stylesheet" href="/public/css/customer.css">
+
+    <style>
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 7px 0 10px;
+            font-size: 14px;
+        }
+
+        .product-rating .stars {
+            color: #eab308;
+            font-size: 17px;
+            letter-spacing: 1px;
+        }
+
+        .product-rating .rating-number {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .product-rating .review-count {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .no-rating {
+            color: #9ca3af;
+            font-size: 13px;
+            margin: 7px 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container nav-content">
+            <h1 class="logo">Pasar<span>Online</span></h1>
+
+            <div class="nav-links">
+                <a href="/customer/catalog/dashboard">Beranda</a>
+                <a href="/customer/cart/page">Keranjang</a>
+                <a href="/customer/orders/">Pesanan Saya</a>
+                <a href="/customer/profile">Profil</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section class="welcome">
+            <div>
+                <p class="welcome-label">SELAMAT DATANG DI PASARONLINE</p>
+                <h2>Belanja kebutuhan harian lebih mudah.</h2>
+                <p>Temukan produk segar langsung dari pedagang pasar.</p>
+            </div>
+        </section>
+
+        <section class="catalog-section">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Katalog Produk</h2>
+                    <p>Temukan kebutuhan favoritmu.</p>
+                </div>
+
+                <span>{{ products|length }} Produk</span>
+            </div>
+
+            <input
+                type="text"
+                id="searchInput"
+                class="search-input"
+                placeholder="Cari nama produk atau toko..."
+            >
+
+            <div class="product-grid" id="productGrid">
+
+                {% for product in products %}
+
+                <article class="product-card"
+                    data-name="{{ product.name|lower }}"
+                    data-shop="{{ product.producer.shop_name|lower }}"
+                    data-category="{{ product.category|lower }}">
+
+                    {% if product.image %}
+
+                    <img
+                        src="{{ product.image }}"
+                        alt="{{ product.name }}"
+                        class="product-image"
+                    >
+
+                    {% else %}
+
+                    <div class="no-image">Belum ada foto</div>
+
+                    {% endif %}
+
+                    <div class="product-info">
+
+                        <span class="category">
+                            {{ product.category }}
+                        </span>
+
+                        <h3>{{ product.name }}</h3>
+
+                        {% if product.review_count > 0 %}
+
+                        <div class="product-rating">
+                            <span class="stars">★</span>
+
+                            <span class="rating-number">
+                                {{ "%.1f"|format(product.average_rating) }}
+                            </span>
+
+                            <span class="review-count">
+                                ({{ product.review_count }} ulasan)
+                            </span>
+                        </div>
+
+                        {% else %}
+
+                        <p class="no-rating">
+                            Belum ada ulasan
+                        </p>
+
+                        {% endif %}
+
+                        <p class="shop-name">
+                            {{ product.producer.shop_name }}
+                        </p>
+
+                        <p class="stock">
+                            Stok: {{ product.stock_quantity }}
+                            {{ product.base_unit }}
+                        </p>
+
+                        <label>Pilih satuan:</label>
+
+                        <select
+                            class="unit-select"
+                            {% if not product.units %}disabled{% endif %}
+                        >
+
+                            {% for unit in product.units %}
+
+                            <option
+                                value="{{ unit.id }}"
+                                data-price="{{ unit.price }}"
+                            >
+                                {{ unit.unit_name }}
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <p class="price">
+                            Rp
+
+                            <span class="price-value">
+
+                                {% if product.units %}
+
+                                    {{ "{:,.0f}".format(product.units[0].price|float).replace(",", ".") }}
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </span>
+                        </p>
+
+                        <div class="shop-location">
+                            {{ product.producer.market_name }},
+                            Blok {{ product.producer.block or "-" }},
+                            Lapak {{ product.producer.stall_number }}
+                        </div>
+
+                        <button
+                            type="button"
+                            class="add-cart-btn"
+                            {% if not product.units %}disabled{% endif %}
+                        >
+                            Tambah ke Keranjang
+                        </button>
+
+                    </div>
+
+                </article>
+
+                {% else %}
+
+                <p class="empty-message">
+                    Belum ada produk yang tersedia.
+                </p>
+
+                {% endfor %}
+
+            </div>
+
+            <p id="noResults" class="empty-message" hidden>
+                Produk tidak ditemukan.
+            </p>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2026 PasarOnline. Belanja mudah dari pasar tradisional.</p>
+    </footer>
+
+    <script src="/public/js/customer.js"></script>
+
+</body>
+</html>

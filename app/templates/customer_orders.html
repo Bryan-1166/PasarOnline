@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya - PasarOnline</title>
+    <link rel="stylesheet" href="/public/css/customer.css">
+
+    <style>
+        .orders-section {
+            padding: 35px 0;
+        }
+
+        .order-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 18px;
+        }
+
+        .order-header, .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .order-number {
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        .order-status {
+            background: #e0f2fe;
+            color: #075985;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .order-info {
+            margin: 18px 0;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .order-total {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .detail-btn {
+            display: inline-block;
+            background: #15803d;
+            color: white;
+            text-decoration: none;
+            padding: 10px 17px;
+            border-radius: 8px;
+        }
+
+        .empty-orders {
+            background: white;
+            padding: 35px;
+            text-align: center;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-content">
+        <h1 class="logo">Pasar<span>Online</span></h1>
+
+        <div class="nav-links">
+            <a href="/customer/catalog/dashboard">Beranda</a>
+            <a href="/customer/cart/page">Keranjang</a>
+            <a href="/customer/orders/">Pesanan Saya</a>
+        </div>
+    </div>
+</header>
+
+<main class="container orders-section">
+
+    <h2>Riwayat Pesanan Saya</h2>
+    <p>Lihat seluruh transaksi dan perkembangan pesananmu.</p>
+
+    {% if orders %}
+
+        {% for item in orders %}
+
+        <article class="order-card">
+
+            <div class="order-header">
+                <div>
+                    <div class="order-number">
+                        {{ item.order.order_number }}
+                    </div>
+
+                    <small>
+                        {{ item.order.created_at.strftime("%d-%m-%Y %H:%M") }}
+                    </small>
+                </div>
+
+                <span class="order-status">
+                    {{ item.order.status.replace("_", " ")|title }}
+                </span>
+            </div>
+
+            <div class="order-info">
+                <div>
+                    Jumlah jenis produk: {{ item.item_count }}
+                </div>
+
+                <div>
+                    Pembayaran:
+                    {% if item.payment %}
+                        {{ item.payment.status.replace("_", " ")|title }}
+                    {% else %}
+                        Belum tersedia
+                    {% endif %}
+                </div>
+
+                <div>
+                    Pengiriman:
+                    {% if item.delivery %}
+                        {{ item.delivery.status.replace("_", " ")|title }}
+                    {% else %}
+                        Belum tersedia
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="order-footer">
+                <div class="order-total">
+                    Rp {{ "{:,.0f}".format(item.order.total_amount|float).replace(",", ".") }}
+                </div>
+
+                <a
+                    href="/customer/orders/{{ item.order.id }}"
+                    class="detail-btn"
+                >
+                    Lihat Detail
+                </a>
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="empty-orders">
+            <h3>Belum Ada Pesanan</h3>
+            <p>Pesanan yang kamu buat akan muncul di halaman ini.</p>
+
+            <a href="/customer/catalog/dashboard" class="detail-btn">
+                Mulai Belanja
+            </a>
+        </div>
+
+    {% endif %}
+
+</main>
+
+<footer>
+    <p>© 2026 PasarOnline.</p>
+</footer>
+
+</body>
+</html>
